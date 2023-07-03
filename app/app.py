@@ -66,7 +66,7 @@
 
 # if __name__ == '__main__':
 #     app.run(port=5555)
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from flask_migrate import Migrate
 from models import db, Hero, Power, HeroPower
 
@@ -81,15 +81,20 @@ db.init_app(app)
 def get_heroes():
     heroes = Hero.query.all()
     result = []
-    for hero in heroes:
-        result.append(hero.to_dict())
+    for hero in Hero.query.all():
+        hero = {
+            "id" : hero.id,
+            "name": hero.name, 
+            "super_name": hero.super_name
+            }
+        result.append(hero)
     return jsonify(result)
 
 @app.route('/heroes/<id>/', methods=['GET'])
 def get_hero(id):
     hero = Hero.query.get(id)
     if hero:
-        return jsonify(hero.to_dict())
+        return jsonify(hero)
     else:
         return jsonify({'message': 'Hero not found'}), 404
 
@@ -98,7 +103,14 @@ def get_powers():
     powers = Power.query.all()
     result = []
     for power in powers:
-        result.append(power.to_dict())
+        power={
+            "id": power.id,
+        "name": power.name,
+        "description": power.description,
+        "created_at": power.created_at,
+        "updated_at" : power.updated_at
+        }
+        result.append(power)
     return jsonify(result)
 
 @app.route('/powers/<id>/', methods=['GET'])
@@ -122,23 +134,28 @@ def update_power(id):
             power.description = description
 
         db.session.commit()
-        return jsonify(power.to_dict())
+        return jsonify(power)
     else:
         return jsonify({'message': 'Power not found'}), 404
 
 @app.route('/hero_powers', methods=['POST'])
 def add_hero():
-    data = request.json
-    id = data.get('id')
-    hero_powers = data.get('hero_powers')
+    data = request.form
+    
 
-    if id is not None and hero_powers is not None:
-        hero = Hero(id=id, hero_powers=hero_powers)
-        db.session.add(hero)
-        db.session.commit()
-        return jsonify(hero.to_dict())
-    else:
-        return jsonify({'message': 'Invalid request'}), 400
+    # if id is not None and hero_powers is not None:
+    hero = HeroPower(
+        strength = data.get('strength'),
+        power_id = data.get('power_id'),
+        hero_id = data.get('hero_id')
+        
+        
+        )
+    db.session.add(hero)
+    db.session.commit()
+    return jsonify(hero)
+    # else:
+    #     return jsonify({'message': 'Invalid request'}), 400
 
 if __name__ == '__main__':
     app.run(port=5555)

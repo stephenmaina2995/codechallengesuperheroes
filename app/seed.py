@@ -52,11 +52,14 @@
 
 # print("🦸‍♀️ Done seeding!")
 from faker import Faker
-from models import db, Hero, Power
+from app import app
+from models import db, Hero, Power, HeroPower
+import random
 
 fake = Faker()
 
-def seed_database():
+with app.app_context():
+# def seed_database():
     powers = [
         {"name": "super strength", "description": "gives the wielder super-human strengths"},
         {"name": "flight", "description": "gives the wielder the ability to fly through the skies at supersonic speed"},
@@ -69,7 +72,7 @@ def seed_database():
 
     db.session.commit()
 
-    hero = [
+    heroes = [
         {"name": "Kamala Khan", "super_name": "Ms. Marvel"},
         {"name": "Doreen Green", "super_name": "Squirrel Girl"},
         {"name": "Gwen Stacy", "super_name": "Spider-Gwen"},
@@ -91,7 +94,7 @@ def seed_database():
     all_powers = Power.query.all()
 
     for hero in Hero.query.all():
-        for _ in range(fake.random_int(min=1, max=3)):
+        for  i in range(fake.random_int(min=1, max=8)):
             power = fake.random_element(all_powers)
             hero_power = HeroPower(hero=hero, power=power, strength=fake.random_element(strengths))
             db.session.add(hero_power)
